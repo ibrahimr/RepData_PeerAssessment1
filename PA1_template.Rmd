@@ -8,7 +8,15 @@ output:
 
 ## Loading and preprocessing the data
 
-
+```{r}
+setwd("C:\\DataScinceTrack\\reproducible-research\\RepData_PeerAssessment1")
+getwd()
+activity <- read.csv( ".\\activity\\activity.csv",header = TRUE )
+head(activity)
+tail(activity)
+str(activity)
+names(activity)
+```
 
 ## What is mean total number of steps taken per day?
 
