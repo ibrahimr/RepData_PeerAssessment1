@@ -15,19 +15,110 @@ activity <- read.csv( ".\\activity\\activity.csv",header = TRUE )
 head(activity)
 tail(activity)
 str(activity)
-names(activity)
+
+#no missing valyes in act
+act <- activity[complete.cases(activity), ]
+
+# Convert date to date class
+activity$date <- as.Date(activity$date, "%Y-%m-%d")
+# Convert interval to a factor
+# activity$interval <- as.factor(activity$interval)
+
+str(activity)
+ 
+ 
 ```
 
 ## What is mean total number of steps taken per day?
+```{r}
+#ignore the missing values in the dataset.
+#Make a histogram of the total number of steps taken each day
+library(ggplot2)
+
+#find the total, mean and median number of steps
+ 
+total_by_date <- aggregate(steps ~ date, data = act, FUN = sum,na.rm = T)
+
+hist(total_by_date$steps , main = "Histogram of total number of steps per day", xlab = "Steps per day")
+#find mean and median
+mean(total_by_date$steps)
+median(total_by_date$steps)
+```
+
+#Average daily activity pattern
+```{r}
+ 
 
 
-
-## What is the average daily activity pattern?
-
-
+avg_by_interval <- tapply(act$steps, as.factor (act$interval), mean )
+class(avg_by_interval)
+# to plot bombine avg and interval in one data frame
+df<- as.data.frame( cbind( avg= unname(avg_by_interval) , interval= unique(activity$interval ) ) )
+ 
+str(df)
+#plot
+plot(df$avg , type='l', main = "Histogram of AvR steps By Interval", xlab = "Steps per interval")
+```
 
 ## Imputing missing values
 
+```{r}
+ 
+#Calculate and report the total number of missing values in the datase
+#Number of missing rows "steps ae NA"
+dim(activity[is.na(activity$steps),] )[1]
+
+#Devise a strategy for filling in all of the missing values in the dataset. 
+#  mean of that day
+
+# find the mode
+ 
+
+mod <- names(sort(-table(activity$steps)))[1]
+#replace na vakues with mod in new data set
+activit_fill<-activity
+activit_fill[is.na(activity$steps),]$steps <-  as.numeric(mod)
+summary(activit_fill)
+
+#  Make a histogram of the total number of steps taken each day and Calculate and report the mean and median total number of steps taken per day. Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?
+
+total_by_date_NOMISSING <- aggregate(steps ~ date, data = activit_fill, FUN = sum )
+
+hist(total_by_date_NOMISSING$steps , main = "Histogram of total number of steps per day and now missing data", xlab = "Steps per day")
+
+#find mean and median
+mean(total_by_date_NOMISSING$steps)
+median(total_by_date_NOMISSING$steps)
+ 
+
+```
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
+
+```{r}
+# Create a new factor variable in the dataset with two levels – “weekday” and “weekend” indicating whether a given date is a weekday or weekend day
+ 
+#DD DAY COULMN
+activit_fill$day <- weekdays(as.Date(activit_fill$date))
+# Create a logical vector d where Days are Saturday or Sunday
+d <- activit_fill$day == "Saturday" | activit_fill$day == "Sunday"
+# Call Saturday and Sunday Weekend
+activit_fill$type[d] = "Weekend"
+# Call weekdays (Monday through Friday) Weekdays
+activit_fill$type[!d] = "Weekday"
+
+
+
+# Make a panel plot containing a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis). See the README file in the GitHub repository to see an example of what this plot should look like using simulated data.
+ 
+
+plt <- ggplot(activit_fill, aes(interval, steps)) +
+    geom_line(stat = "identity", aes(colour =type)) +
+       
+     ggtitle(" Per Interval by day type")
+print(plt)
+
+ 
+ 
+  ```
